@@ -32,6 +32,25 @@ app.post('/login', (req, resp) => {
     const query = `SELECT * FROM usuarios WHERE email = '${req.body.email}'`;
     connection.query(query, (err, data) => {
         console.log(data);
+        console.log(err);
+        if (data.length === 0) {
+            return resp.status(400).json({
+                message: 'El email no existe'
+            })
+        }
+        if(!bcrypt.compareSync(req.body.password, data[0].password)) {
+            return resp.status(403).json({
+                message: 'El email o contraseña son incorrectos'
+            })
+        }
+        if(err) {
+            return resp.status(500).json({
+                message: 'El servidor no se encuentra disponible en estos momentos'
+            })
+        }
+        resp.status(200).json({
+            mesage: 'ok'
+        })
     })
 })
 
