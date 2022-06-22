@@ -4,7 +4,7 @@ const connection = require('../db');
 const {v4: uuidv4} = require('uuid');
 const bcrypt = require('bcrypt');
 
-// Post para registras nuevos usuarios
+// Post para registrar nuevos usuarios
 
 app.post('/', (req, resp) => {
     const password = bcrypt.hashSync(req.body.password, 10);
@@ -14,7 +14,6 @@ app.post('/', (req, resp) => {
     connection.query(query, (error, data) => {
 
         if(error?.errno === 1062) {
-            console.log(error);
             return resp.status(400).json({
                 message: 'El email ya existe'
             })
@@ -25,6 +24,15 @@ app.post('/', (req, resp) => {
         })
     })
 
+})
+
+// Post para login de usuarios
+
+app.post('/login', (req, resp) => {
+    const query = `SELECT * FROM usuarios WHERE email = '${req.body.email}'`;
+    connection.query(query, (err, data) => {
+        console.log(data);
+    })
 })
 
 module.exports = app;
