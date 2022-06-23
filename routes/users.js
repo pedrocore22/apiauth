@@ -3,6 +3,7 @@ const app = express();
 const connection = require('../db');
 const {v4: uuidv4} = require('uuid');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // Post para registrar nuevos usuarios
 
@@ -31,8 +32,6 @@ app.post('/', (req, resp) => {
 app.post('/login', (req, resp) => {
     const query = `SELECT * FROM usuarios WHERE email = '${req.body.email}'`;
     connection.query(query, (err, data) => {
-        console.log(data);
-        console.log(err);
         if (data.length === 0) {
             return resp.status(400).json({
                 message: 'El email no existe'
@@ -48,6 +47,15 @@ app.post('/login', (req, resp) => {
                 message: 'El servidor no se encuentra disponible en estos momentos'
             })
         }
+        const token = jwt.sign({
+            user: {
+                id: data[0].id,
+                nombre: data[0].nombre,
+                apellidos: data[0].apellidos,
+                email: data[0].email
+            }
+        }, 'ffgfhddffsd', {expiresIn: 60}); // expiresIn (segundos)
+        resp.cookie('token', token, {httpOnly: true, secure: true, sameSite: 'none', maxAge: 60 * 1000});
         resp.status(200).json({
             mesage: 'ok'
         })
