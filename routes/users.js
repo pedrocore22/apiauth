@@ -47,21 +47,46 @@ app.post('/login', (req, resp) => {
                 message: 'El servidor no se encuentra disponible en estos momentos'
             })
         }
-        const token = jwt.sign({
-            user: {
-                id: data[0].id,
-                nombre: data[0].nombre,
-                apellidos: data[0].apellidos,
-                email: data[0].email
-            }
-        }, 'ffgfhddffsd', {expiresIn: 60}); // expiresIn (segundos)
+        const user = {
+            id: data[0].id,
+            nombre: data[0].nombre,
+            apellidos: data[0].apellidos,
+            email: data[0].email
+        }
+        const token = jwt.sign(user, 'ffgfhddffsd', {expiresIn: 60}); // expiresIn (segundos)
         resp.cookie('token', token, {httpOnly: true, secure: true, sameSite: 'none', maxAge: 60 * 1000});
         resp.status(200).json({
-            mesage: 'ok'
+            mesage: 'ok',
+            user
         })
     })
 })
 
+// Post de comprobación del token
 
+app.get('/check', (req, resp) => {
+    if(req.cookies.token === undefined) {
+        return resp.status(403).json({
+            message: 'Acceso denegado'
+        })
+    }
+    jwt.verify(req.cookies.token, 'ffgfhddffsd', (error, decoded) => {
+        if(error) {
+            return resp.status(403).json({
+                message: 'Acceso denegado'
+            })
+        }
+        const user = {
+            id: decoded.id,
+            nombre: decoded.nombre,
+            apellidos: decoded.apellidos,
+            email: decoded.email
+        }
+        resp.status(200).json({
+            message: 'ok',
+            user
+        })
+    })
+})
 
 module.exports = app;
